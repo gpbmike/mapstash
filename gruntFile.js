@@ -8,6 +8,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-clean');
+  grunt.loadNpmTasks('grunt-gh-pages');
 
   grunt.initConfig({
     jshint: {
@@ -46,15 +47,24 @@ module.exports = function(grunt) {
     },
     copy: {
       files: {
-        src: 'app/index.html',
-        dest: 'dist/',
-        flatten: true
+        expand: true,
+        cwd: 'app/',
+        src: ['*.html'],
+        dest: 'dist/'
       }
     },
-    clean: ['dist/']
+    clean: ['dist/'],
+    'gh-pages': {
+      options: {
+        base: 'dist'
+      },
+      src: ['**']
+    }
   });
 
   this.registerTask("dist", ['clean', 'useminPrepare', 'concat', 'uglify', 'cssmin', 'copy', 'usemin']);
+
+  this.registerTask("deploy", ['gh-pages']);
 
   this.registerTask("default", ["jshint", "connect", "watch"]);
 };

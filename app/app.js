@@ -55,7 +55,7 @@ fb.once('value', function (snapshot) {
 
   fb.on('value', function (snapshot) {
     var data = snapshot.val();
-    if (data.inControl !== userId) {
+    if (data && data.inControl !== userId) {
       removeListeners();
       map.setCenter(new google.maps.LatLng(data.map.lat, data.map.lng));
       map.setZoom(data.map.zoom);
