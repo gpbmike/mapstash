@@ -1,12 +1,11 @@
-$(function () {
-
 var userId = new Date().getTime();
 
 var fb, startData = {
   map: {
     lat: -34.397,
     lng: 150.644,
-    zoom: 5
+    zoom: 5,
+    mapTypeId: google.maps.MapTypeId.ROADMAP
   },
   inControl: userId
 };
@@ -24,14 +23,17 @@ fb.once('value', function (snapshot) {
 
   window.map = new google.maps.Map(document.getElementById("map"), {
     zoom: initialData.map.zoom,
-    center: new google.maps.LatLng(initialData.map.lat, initialData.map.lng)
+    center: new google.maps.LatLng(initialData.map.lat, initialData.map.lng),
+    mapTypeId: initialData.map.mapTypeId,
+    streetViewControl: false
   });
 
   var updateFirebase = function () {
     currentData = {
-      lat: map.getCenter().lat(),
-      lng: map.getCenter().lng(),
-      zoom: map.getZoom()
+      lat      : map.getCenter().lat(),
+      lng      : map.getCenter().lng(),
+      zoom     : map.getZoom(),
+      mapTypeId: map.getMapTypeId()
     };
     fb.set({
       map: currentData,
@@ -39,16 +41,20 @@ fb.once('value', function (snapshot) {
     });
   };
 
-  var centerListener, zoomListener;
+  var listeners = [],
+      eventNames = ['center_changed', 'zoom_changed', 'maptypeid_changed'];
 
   var addListeners = function () {
-    centerListener = google.maps.event.addListener(map, 'center_changed', updateFirebase);
-    zoomListener = google.maps.event.addListener(map, 'zoom_changed', updateFirebase);
+    eventNames.forEach(function (eventName) {
+      listeners.push(google.maps.event.addListener(map, eventName, updateFirebase));
+    });
   };
 
   var removeListeners = function () {
-    google.maps.event.removeListener(centerListener);
-    google.maps.event.removeListener(zoomListener);
+    listeners.forEach(function (listener) {
+      google.maps.event.removeListener(listener);
+    });
+    listeners = [];
   };
 
   addListeners();
@@ -59,10 +65,9 @@ fb.once('value', function (snapshot) {
       removeListeners();
       map.setCenter(new google.maps.LatLng(data.map.lat, data.map.lng));
       map.setZoom(data.map.zoom);
+      map.setMapTypeId(data.map.mapTypeId);
       addListeners();
     }
   });
-
-});
 
 });
