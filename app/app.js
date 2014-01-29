@@ -28,6 +28,20 @@ fb.once('value', function (snapshot) {
     streetViewControl: false
   });
 
+  var markers = [],
+      markerIds = [];
+
+  fb.child('markers').on('child_added', function (snapshot) {
+    if (markers.indexOf(snapshot.name()) < 0) {
+      var marker = snapshot.val();
+      addMarker(new google.maps.LatLng(marker.lat, marker.lng), snapshot.ref());
+    }
+  });
+
+  fb.child('markers').on('child_removed', function (snapshot) {
+    removeMarker(snapshot.name());
+  });
+
   var updateFirebase = function () {
     currentData = {
       lat      : map.getCenter().lat(),
@@ -35,11 +49,50 @@ fb.once('value', function (snapshot) {
       zoom     : map.getZoom(),
       mapTypeId: map.getMapTypeId()
     };
-    fb.set({
+    fb.update({
       map: currentData,
       inControl: userId
     });
   };
+
+  function removeMarker(id, markerRef) {
+    // window.console.log(id, marker)
+    var idx = markerIds.indexOf(id);
+    if (idx >= 0) {
+      markers[idx].setMap(null);
+      markers.splice(idx, 1);
+      markerIds.splice(idx, 1);
+    }
+    if (markerRef) {
+      markerRef.remove();
+    }
+  }
+
+  function addMarker(location, markerRef) {
+    var marker = new google.maps.Marker({
+      position: location,
+      map: map
+    });
+
+    if (!markerRef) {
+      markerRef = fb.child('markers').push({
+        lat: location.lat(),
+        lng: location.lng()
+      });
+    }
+
+    markers.push(marker);
+    markerIds.push(markerRef.name());
+
+    google.maps.event.addListener(marker, 'click', function(event) {
+      removeMarker(markerRef.name(), markerRef);
+    });
+
+  }
+
+  google.maps.event.addListener(map, 'click', function(event) {
+    addMarker(event.latLng);
+  });
 
   var listeners = [],
       eventNames = ['center_changed', 'zoom_changed', 'maptypeid_changed'];
