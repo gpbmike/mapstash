@@ -62,9 +62,9 @@ module.exports = function(grunt) {
     }
   });
 
-  this.registerTask("dist", ['clean', 'useminPrepare', 'concat', 'uglify', 'cssmin', 'copy', 'usemin']);
+  this.registerTask("build", ['clean', 'useminPrepare', 'concat', 'uglify', 'cssmin', 'copy', 'usemin']);
 
-  this.registerTask("deploy", ['gh-pages']);
+  this.registerTask("deploy", ['build', 'gh-pages']);
 
   this.registerTask("default", ["jshint", "connect", "watch"]);
 };
