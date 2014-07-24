@@ -29,11 +29,11 @@ module.exports = function(grunt) {
         livereload: true,
       },
       scripts: {
-        files: ['**/*.js'],
+        files: ['app/**/*.js'],
         tasks: ['jshint']
       },
       html: {
-        files: ['**/*.html']
+        files: ['app/**/*.html']
       }
     },
     useminPrepare: {
